@@ -22,3 +22,5 @@ include = ["summarizer*"]
 
 [project.scripts]
 json-summarizer = "summarizer.pipeline:run_pipeline"
+
+
