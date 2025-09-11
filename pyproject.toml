@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "json-summarizer"
+version = "0.1.0"
+description = "A pipeline to summarize and evaluate JSON histories"
+#authors = [
+#    { name = "Zaid Akhtar" }
+#]
+dependencies = [
+    "torch",
+    "transformers",
+    "bert-score",
+    "textstat",
+    "nltk"
+]
+
+[project.scripts]
+json-summarizer = "json_summarizer.summarizer.pipeline:run_pipeline"
+
+[tool.setuptools.packages.find]
+where = ["."]

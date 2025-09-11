@@ -1,0 +1,2 @@
+[console_scripts]
+json-summarizer = json_summarizer.summarizer.pipeline:run_pipeline
