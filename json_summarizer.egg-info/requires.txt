@@ -1,5 +1,0 @@
-torch
-transformers
-bert-score
-textstat
-nltk

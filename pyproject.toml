@@ -6,9 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "json-summarizer"
 version = "0.1.0"
 description = "A pipeline to summarize and evaluate JSON histories"
-#authors = [
-#    { name = "Zaid Akhtar" }
-#]
+readme = "README.md"
+requires-python = ">=3.8"
 dependencies = [
     "torch",
     "transformers",
@@ -17,8 +16,9 @@ dependencies = [
     "nltk"
 ]
 
-[project.scripts]
-json-summarizer = "json_summarizer.summarizer.pipeline:run_pipeline"
-
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["summarizer*"]
+
+[project.scripts]
+json-summarizer = "summarizer.pipeline:run_pipeline"
