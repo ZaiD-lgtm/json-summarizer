@@ -1,7 +1,8 @@
 import json
 from transformers import BartTokenizer, BartForConditionalGeneration, pipeline
-from json_summarizer.summarizer.metrics_llm_eval import score_summary
-#
+# from json_summarizer.summarizer.metrics_llm_eval import score_summary
+from summarizer.metrics_llm_eval import score_summary
+
 # pipeline = pipeline(
 #     task="fill-mask",
 #     model="facebook/bart-large",
