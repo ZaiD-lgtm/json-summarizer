@@ -1,131 +1,116 @@
 import json
+import nltk
+import spacy
 from transformers import BartTokenizer, BartForConditionalGeneration, pipeline
-# from json_summarizer.summarizer.metrics_llm_eval import score_summary
-from summarizer.metrics_llm_eval import score_summary
 
-# pipeline = pipeline(
-#     task="fill-mask",
-#     model="facebook/bart-large",
-#     dtype=torch.float16,
-#     device=0
-# )
-# pipeline("Plants create <mask> through a process known as photosynthesis.")
+def ner_score(entities, total_tokens):
+    entity_tokens = sum(len(ent.split()) for ent in entities)
+    return entity_tokens / total_tokens if total_tokens > 0 else 0
 
 
-def parse_json(json_file_path):
-    with open(json_file_path, "r") as f:
-        data = json.load(f)
+def extract_entities(text):
+    nlp = spacy.load("en_core_web_sm")
+    doc = nlp(text)
+    return [f"{ent.text} ({ent.label_})" for ent in doc.ents if ent.label_ in ["PERSON", "ORG", "GPE", "LOC", "DATE"]]
 
-    history = data.get("history", [])
+def extractive(text):
+    nltk.download('punkt', quiet=True)
+    sentences = nltk.sent_tokenize(text)
+    return " ".join(sentences)
 
-    summary_text = []
-    for i, step in enumerate(history, start=1):
-        model_output = step.get("model_output", {})
-        thinking = model_output.get("thinking", "")
-        next_goal = model_output.get("next_goal", "")
-        actions = model_output.get("action", [])
-        result = step.get("result", [])
 
-        actions_str = "; ".join([str(a) for a in actions]) if actions else "No action"
-        errors = [r.get("error", "") for r in result if r.get("error")]
-        error_str = "; ".join(errors) if errors else "No errors"
-
-        step_summary = (
-            f"Step {i}: Thought: {thinking}. "
-            f"Goal: {next_goal}. "
-            f"Actions: {actions_str}. "
-            f"Errors: {error_str}. "
-        )
-        summary_text.append(step_summary)
-
-    final_text = " ".join(summary_text)
-    return final_text
-
-# print(final_text)
-
-def summarize(original_text):
-    # load model 1024 maximum sequence length
-    model_name = "facebook/bart-large-cnn"
-    # model_name = "facebook/bart-base"
-    tokenizer = BartTokenizer.from_pretrained(model_name)
-    model = BartForConditionalGeneration.from_pretrained(model_name)
-
-    inputs = tokenizer([original_text], max_length=1024, return_tensors="pt", truncation=True) #encode text
-    summary_ids = model.generate(
-        inputs["input_ids"],
-        num_beams=4,
-        length_penalty=2.0,
-        max_length=500,          #max tokens in summary
-        min_length=30,           #min tokens in summary
-        early_stopping=True
-    )
-
-    # Decode and print summary
-    #
-    # summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
-    # print("\n\n-------------------Summary by bart-base model---------------- \n\n",summary)
-    #
-
-    #pipeline
-    summarizer = pipeline("summarization", model = model_name)
-
-    # print("/////////////////////////////////")
-    summarized_text = summarizer(original_text)
-    summarized_text = summarized_text[0]["summary_text"]
-    # print(f"------------------Original Text:------------------- \n\n {original_text}")
-    # print("Summarized_text: \n\n", summarized_text)
-    return summarized_text
-
-def summarize_with_variants(original_text, num_variants=4):
+def abstractive(text, entities):
     model_name = "facebook/bart-large-cnn"
     tokenizer = BartTokenizer.from_pretrained(model_name)
     model = BartForConditionalGeneration.from_pretrained(model_name)
-
-    prompts = [
-        "Summarize the following text concisely:",
-        "Write a detailed summary of the following text:",
-        "Summarize in simple and clear terms:",
-        "Write a high-level overview of the following text:"
-    ]
 
     summarizer = pipeline("summarization", model=model, tokenizer=tokenizer)
 
-    summaries = []
-    for prompt in prompts[:num_variants]:
-        text_with_prompt = f"{prompt} {original_text}"
-        summary = summarizer(
-            text_with_prompt,
-            max_length=500,
-            min_length=30,
-            length_penalty=2.0,
-            num_beams=4,
-            truncation=True
-        )[0]["summary_text"]
-        summaries.append(summary)
+    inputs = tokenizer(
+        text,
+        max_length=1024,
+        truncation=True,
+        return_tensors="pt"
+    )
 
-    final_summary = ""
-    score = -1
-    for i in summaries:
-        metrics = score_summary(original_text, i)
-        if metrics["final_score"] > score:
-            final_summary = i
-            score = metrics["final_score"]
+    summary_ids = model.generate(
+        **inputs,
+        max_length=150,
+        min_length=40,
+        length_penalty=2.0,
+        num_beams=4,
+        early_stopping=True
+    )
 
+    summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
+    return summary
 
-    return final_summary, score
+def choose_summarizer(text):
+    tokens = text.split()
+    entities = extract_entities(text)
+    score = ner_score(entities, len(tokens))
+    if score >= 0.15:
+        return extractive(text), "extractive", score
+    else:
+        return abstractive(text, entities), "abstractive", score
 
-#
-# if __name__ == "__main__":
-#     json_file_path = "../../workspace/raman.json"
-#
-#     original_text = parse_json(json_file_path)
-#
-#     summarized_text = summarize(original_text)
-#
-#     print(f"Original Text: \n\n {original_text}")
-#     print("Summarized_text: \n\n", summarized_text)
-#
-#     metrics = score_summary(original_text, summarized_text)
-#     print(f"Final Score: {metrics["final_score"]}")
+def generate_summary_prompt(json_path: str):
+    with open(json_path, "r") as file:
+        json_data = json.load(file)
+    history = json_data['history']
+    final_result_text = None
+    process_summary_text = "The agent performed a series of steps to find the requested information."
 
+    for i in range(len(history) - 1, -1, -1):
+        step = history[i]
+        actions = step.get('model_output', {}).get('action', [])
+        results = step.get('result', [])
 
+        extract_action_index = -1
+        for j, action in enumerate(actions):
+            if 'extract_structured_data' in action:
+                extract_action_index = j
+                break
+
+        if extract_action_index != -1 and extract_action_index < len(results):
+            extracted_content = results[extract_action_index].get('extracted_content')
+            if extracted_content:
+                if "Query:" in extracted_content and "Result:" in extracted_content:
+                    final_result_text = extracted_content.split("Result:", 1)[-1].strip()
+                else:
+                    final_result_text = extracted_content.strip()
+
+                if i > 0:
+                    previous_step_memory = history[i - 1].get('model_output', {}).get('memory')
+                    if previous_step_memory:
+                        process_summary_text = previous_step_memory
+                break
+
+    if not final_result_text:
+        print("Warning: Could not find any successful 'extract_structured_data' action in the log.")
+        final_memory = history[-1].get('model_output', {}).get('memory', "The task was completed.")
+        final_result_text = f"No specific data was extracted. The final status was: '{final_memory}'"
+
+    prompt = f"""{process_summary_text}\n{final_result_text}"""
+    return prompt.strip(), process_summary_text, final_result_text
+
+if __name__ == "__main__":
+    json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
+    json_new = "/home/zaid/Downloads/voice-agent/raman-hospitals-history.json"
+    original_text,one,two = generate_summary_prompt(json_new)
+    # print(f"one: {one}")
+    # print(f"two: {two}")
+    one_ = extractive(one)    # summary, model_used, ner_ratio = choose_summarizer(original_text)
+    # print(f"{model_used} model used")
+    # print("NER Ratio:", ner_ratio)
+    # print("Final: \n", summary)
+    two = two.replace("\n", " ")
+    two_entities = extract_entities(two)
+    two_ = abstractive(two, two_entities)
+
+    final = f"{one_} \n\n {two_}"
+    print(final)
+    # summary, model_used, ner_ratio = choose_summarizer(original_text)
+    # print(f"{model_used} model used")
+    # print("NER Ratio:", ner_ratio)
+    # print("Final: \n", summary)

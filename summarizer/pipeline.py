@@ -1,15 +1,20 @@
 import json
 import nltk
-from .bart_ai import parse_json, summarize, summarize_with_variants
-from .metrics_llm_eval import score_summary
+from summarizer.bart_ai import generate_summary_prompt, extractive, extract_entities, abstractive
+from summarizer.metrics_llm_eval import score_summary
 
 nltk.download("punkt")
 
 def evaluate_json(json_file_path: str):
-    """Parse JSON, summarize, and evaluate."""
-    original_text = parse_json(json_file_path)
-    summary, final_score = summarize_with_variants(original_text)
-    metrics = score_summary(original_text, summary)
+    original_text, one, two = generate_summary_prompt(json_file_path)
+    one_ = extractive(one)
+    two = two.replace("\n", " ")
+    two_entities = extract_entities(two)
+    two_ = abstractive(two, two_entities)
+    original = f"{one} \n\n {two}"
+    final = f"{one_} \n\n {two_}"
+
+    metrics = score_summary(original_text, final)
 
     print("\n--- Evaluation Metrics ---")
     print(f"BERTScore (F1): {metrics['bert_f1']:.4f}")
@@ -20,8 +25,8 @@ def evaluate_json(json_file_path: str):
     print(f"=== Final Score: {metrics['final_score']:.4f} ===")
 
     return {
-        "original_text": original_text,
-        "summary": summary,
+        "original_text": original,
+        "summary": final,
         "metrics": metrics
     }
 
@@ -40,14 +45,12 @@ def update_json_with_results(json_file_path: str, summary: str, scores: dict, ou
 
 
 def run_pipeline(json_file_path: str, output_file: str = "updated_json.json"):
-    """Run the full summarization and evaluation pipeline."""
     result = evaluate_json(json_file_path)
     print("\n--- Summary ---\n", result["summary"])
     update_json_with_results(json_file_path, result["summary"], result["metrics"], output_file)
 
-#
-#
-# if __name__ == "__main__":
-#     json_file_path = "../workspace/raman.json"
-#     output_file = "../workspace/updated.json"
-#     run_pipeline(json_file_path, output_file)
+
+if __name__ == "__main__":
+    json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
+    output_file = "../workspace/updated.json"
+    run_pipeline(json_file_path, output_file)
