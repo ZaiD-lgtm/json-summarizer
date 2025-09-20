@@ -95,22 +95,22 @@ def generate_summary_prompt(json_path: str):
     return prompt.strip(), process_summary_text, final_result_text
 
 if __name__ == "__main__":
-    json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
-    json_new = "/home/zaid/Downloads/voice-agent/raman-hospitals-history.json"
-    original_text,one,two = generate_summary_prompt(json_new)
-    # print(f"one: {one}")
-    # print(f"two: {two}")
-    one_ = extractive(one)    # summary, model_used, ner_ratio = choose_summarizer(original_text)
-    # print(f"{model_used} model used")
-    # print("NER Ratio:", ner_ratio)
-    # print("Final: \n", summary)
-    two = two.replace("\n", " ")
-    two_entities = extract_entities(two)
-    two_ = abstractive(two, two_entities)
-
-    final = f"{one_} \n\n {two_}"
-    print(final)
-    # summary, model_used, ner_ratio = choose_summarizer(original_text)
-    # print(f"{model_used} model used")
-    # print("NER Ratio:", ner_ratio)
-    # print("Final: \n", summary)
+    # json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
+    # json_new = "/home/zaid/Downloads/voice-agent/raman-hospitals-history.json"
+    # original_text,one,two = generate_summary_prompt(json_new)
+    # # print(f"one: {one}")
+    # # print(f"two: {two}")
+    # one_ = extractive(one)    # summary, model_used, ner_ratio = choose_summarizer(original_text)
+    # # print(f"{model_used} model used")
+    # # print("NER Ratio:", ner_ratio)
+    # # print("Final: \n", summary)
+    # two = two.replace("\n", " ")
+    # two_entities = extract_entities(two)
+    # two_ = abstractive(two, two_entities)
+    #
+    # final = f"{one_} \n\n {two_}"
+    # print(final)
+    # # summary, model_used, ner_ratio = choose_summarizer(original_text)
+    # # print(f"{model_used} model used")
+    # # print("NER Ratio:", ner_ratio)
+    # # print("Final: \n", summary)

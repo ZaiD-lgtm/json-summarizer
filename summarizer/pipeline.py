@@ -49,8 +49,8 @@ def run_pipeline(json_file_path: str, output_file: str = "updated_json.json"):
     print("\n--- Summary ---\n", result["summary"])
     update_json_with_results(json_file_path, result["summary"], result["metrics"], output_file)
 
-
-if __name__ == "__main__":
-    json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
-    output_file = "../workspace/updated.json"
-    run_pipeline(json_file_path, output_file)
+#
+# if __name__ == "__main__":
+#     json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
+#     output_file = "../workspace/updated.json"
+#     run_pipeline(json_file_path, output_file)
