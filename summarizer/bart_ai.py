@@ -94,12 +94,18 @@ def generate_summary_prompt(json_path: str):
     prompt = f"""{process_summary_text}\n{final_result_text}"""
     return prompt.strip(), process_summary_text, final_result_text
 
-if __name__ == "__main__":
-    # json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
+# if __name__ == "__main__":
+#     json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
     # json_new = "/home/zaid/Downloads/voice-agent/raman-hospitals-history.json"
     # original_text,one,two = generate_summary_prompt(json_new)
     # # print(f"one: {one}")
     # # print(f"two: {two}")
+    # text = '''I have successfully completed your request to find multi-specialty hospitals near Paschim Vihar, New Delhi. Using Google search and directory sites like Justdial, I extracted a list of over 10 relevant hospitals, filtered the top 5 based on the highest number of reviews for reliability, and verified online appointment options for each via their official websites. All top 5 hospitals offer online booking or consultation features. Here is a summary of the top 5:\n\n1. **Sir Ganga Ram Hospital** (Rating: 4.2/5, Reviews: 34,343, Address: Sir Ganga Ram Hospital Marg, Old Rajinder Nagar, New Delhi - Near Paschim Vihar), Specialties: 71+ including Cardiac, Oncology, etc. Online Appointments: Yes, via 'Book Appointment' button, callback form, and department-specific scheduling on sgrh.com.\n\n2. **BLK-MAX Super Speciality Hospital** (Rating: 4.4/5, Reviews: 30,000+, Address: Pusa Road, Rajinder Nagar, New Delhi - Close to Paschim Vihar), Specialties: Comprehensive multi-specialty including Cancer Care, Heart, etc. Online Appointments: Yes, direct booking form, OPD scheduling, and consultations on blkmaxhospital.com.\n\n3. **Indraprastha Apollo Hospital** (Rating: 4.3/5, Reviews: ~25,000, Address: Sarita Vihar, New Delhi - Accessible from Paschim Vihar), Specialties: Multi-specialty with 50+ departments like Neurology, Orthopedics. Online Appointments: Yes, book appointments, health checkups, second opinions via apollohospitals.com/delhi.\n\n4. **Indian Spinal Injuries Hospital - Venkateshwar** (Rating: 4.4/5, Reviews: 22,000+, Address: Sector 18A, Dwarka, New Delhi - Near Paschim Vihar), Specialties: Multi-specialty including Spine, Orthopedics, Critical Care. Online Appointments: Yes, OPD scheduler, treatment advice form, and consultations on venkateshwarhospitals.com.\n\n5. **Max Super Speciality Hospital** (Rating: 4.1/5, Reviews: 13,000+, Address: Shalimar Bagh, New Delhi - Very close to Paschim Vihar), Specialties: 28+ including Oncology, Robotic Surgery, Cardiac. Online Appointments: Yes, appointment booking, doctor search, WhatsApp scheduling via maxhealthcare.in.\n\nFor the full list of extracted hospitals (10+ with detailed addresses, ratings, and more), specialties, and complete verification notes, please refer to the attached results.md file. All hospitals are multi-specialty and within or near Paschim Vihar for accessibility.", 'success': True, 'files_to_display': ['results.md']}}]'''
+    # ent = extract_entities(text)
+    # abs = abstractive(text,ent)
+    # ext = extractive(text)
+    # print(abs)
+    # print(ext)
     # one_ = extractive(one)    # summary, model_used, ner_ratio = choose_summarizer(original_text)
     # # print(f"{model_used} model used")
     # # print("NER Ratio:", ner_ratio)

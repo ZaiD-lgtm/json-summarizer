@@ -2,15 +2,14 @@ import json
 import nltk
 from summarizer.bart_ai import generate_summary_prompt, extractive, extract_entities, abstractive
 from summarizer.metrics_llm_eval import score_summary
-
 nltk.download("punkt")
 
 def evaluate_json(json_file_path: str):
     original_text, one, two = generate_summary_prompt(json_file_path)
-    one_ = extractive(one)
-    two = two.replace("\n", " ")
-    two_entities = extract_entities(two)
-    two_ = abstractive(two, two_entities)
+    two_ = extractive(two)
+    one = one.replace("\n", " ")
+    one_entities = extract_entities(one)
+    one_ = abstractive(one, one_entities)
     original = f"{one} \n\n {two}"
     final = f"{one_} \n\n {two_}"
 
@@ -49,8 +48,10 @@ def run_pipeline(json_file_path: str, output_file: str = "updated_json.json"):
     print("\n--- Summary ---\n", result["summary"])
     update_json_with_results(json_file_path, result["summary"], result["metrics"], output_file)
 
-#
+
 # if __name__ == "__main__":
-#     json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
-#     output_file = "../workspace/updated.json"
-#     run_pipeline(json_file_path, output_file)
+    # json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
+    # json_new = "/home/zaid/Downloads/voice-agent/raman-hospitals-history.json"
+    #
+    # output_file = "/home/zaid/Downloads/voice-agent/workspace/updated.json"
+    # run_pipeline(json_new, output_file)
