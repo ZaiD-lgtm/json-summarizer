@@ -1,8 +1,8 @@
 import json
 import nltk
 
-from json_summarizer.summarizer.bart_ai import generate_summary_prompt, extractive, extract_entities, abstractive, ner_score
-from json_summarizer.summarizer.metrics_llm_eval import score_summary
+from summarizer.bart_ai import generate_summary_prompt, extractive, extract_entities, abstractive, ner_score
+from summarizer.metrics_llm_eval import score_summary
 
 
 nltk.download("punkt")
@@ -58,10 +58,10 @@ def run_pipeline(json_file_path: str, output_file: str = "updated_json.json"):
     update_json_with_results(json_file_path, result["summary"], result["metrics"], output_file)
 
 
-if __name__ == "__main__":
-    json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
-    json_new = "/home/zaid/Downloads/voice-agent/raman-hospitals-history.json"
-    json_1 = "/home/zaid/Downloads/voice-agent/raman-doctors-history.json"
-
-    output_file = "/home/zaid/Downloads/voice-agent/workspace/updated.json"
-    run_pipeline(json_1, output_file)
+# if __name__ == "__main__":
+    # json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
+    # json_new = "/home/zaid/Downloads/voice-agent/raman-hospitals-history.json"
+    # json_1 = "/home/zaid/Downloads/voice-agent/raman-doctors-history.json"
+    #
+    # output_file = "/home/zaid/Downloads/voice-agent/workspace/updated.json"
+    # run_pipeline(json_1, output_file)
