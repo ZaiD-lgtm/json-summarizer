@@ -5,8 +5,8 @@ from transformers import BartTokenizer, BartForConditionalGeneration, pipeline
 
 def ner_score(entities, total_tokens):
     entity_tokens = sum(len(ent.split()) for ent in entities)
+    print("entity tokens: count",entity_tokens)
     return entity_tokens / total_tokens if total_tokens > 0 else 0
-
 
 def extract_entities(text):
     nlp = spacy.load("en_core_web_sm")
@@ -17,7 +17,6 @@ def extractive(text):
     nltk.download('punkt', quiet=True)
     sentences = nltk.sent_tokenize(text)
     return " ".join(sentences)
-
 
 def abstractive(text, entities):
     model_name = "facebook/bart-large-cnn"
