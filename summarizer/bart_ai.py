@@ -2,6 +2,8 @@ import json
 import nltk
 import spacy
 from transformers import BartTokenizer, BartForConditionalGeneration, pipeline
+from transformers import AutoTokenizer, AutoModelForTokenClassification, pipeline
+
 
 def ner_score(entities, total_tokens):
     entity_tokens = sum(len(ent.split()) for ent in entities)
@@ -12,6 +14,16 @@ def extract_entities(text):
     nlp = spacy.load("en_core_web_sm")
     doc = nlp(text)
     return [f"{ent.text} ({ent.label_})" for ent in doc.ents if ent.label_ in ["PERSON", "ORG", "GPE", "LOC", "DATE"]]
+
+# def extract_entities(text):
+#     model_name = "dbmdz/bert-large-cased-finetuned-conll03-english"
+#     tokenizer = AutoTokenizer.from_pretrained(model_name)
+#     model = AutoModelForTokenClassification.from_pretrained(model_name)
+#     ner_pipeline = pipeline("ner", model=model, tokenizer=tokenizer, aggregation_strategy="simple")
+#     entities = ner_pipeline(text)
+#     allowed_labels = {"PER": "PERSON", "ORG": "ORG", "LOC": "LOC", "MISC": "MISC"}
+#     return [f"{ent['word']} ({allowed_labels.get(ent['entity_group'], ent['entity_group'])})"
+#             for ent in entities if ent['entity_group'] in allowed_labels]
 
 def extractive(text):
     nltk.download('punkt', quiet=True)
@@ -44,54 +56,44 @@ def abstractive(text, entities):
     summary = tokenizer.decode(summary_ids[0], skip_special_tokens=True)
     return summary
 
-def choose_summarizer(text):
+def choose_summarizer(text,json_file_path):
     tokens = text.split()
     entities = extract_entities(text)
+    print("len: ", len(entities))
     score = ner_score(entities, len(tokens))
-    if score >= 0.15:
-        return extractive(text), "extractive", score
+    print("ner score",score)
+    entity_tokens = sum(len(ent.split()) for ent in entities)
+
+    if entity_tokens >= 15:
+        print(f"Choosing extractive")
+        return extractive(text), 0, score
     else:
-        return abstractive(text, entities), "abstractive", score
+        with open(json_file_path, "r") as file:
+            data = json.load(file)
+            next_goal = data["history"][-1]["model_output"]["next_goal"]
+            text = data["history"][-1]["model_output"]["action"][0]["done"]["text"]
+            extracted_content = data["history"][-1]["result"][0]["extracted_content"]
+            d = f"{next_goal} \n {text} \n {extracted_content}"
+            new_entities = extract_entities(d)
+        print("Choosing abstractive")
+
+        return abstractive(d, new_entities), 1, score
 
 def generate_summary_prompt(json_path: str):
     with open(json_path, "r") as file:
         json_data = json.load(file)
-    history = json_data['history']
-    final_result_text = None
-    process_summary_text = "The agent performed a series of steps to find the requested information."
+        # data["history"][-1]["result"][0]["extracted_content"]
+    final_text_summary = " "
+    action = " "
+    if json_data["history"][-1]["result"][0]["extracted_content"]:
+        final_text_summary = json_data["history"][-1]["result"][0]["extracted_content"]
 
-    for i in range(len(history) - 1, -1, -1):
-        step = history[i]
-        actions = step.get('model_output', {}).get('action', [])
-        results = step.get('result', [])
+    if json_data["history"][-1]["model_output"]["action"][0]["done"]["text"]:
+        action = json_data["history"][-1]["model_output"]["action"][0]["done"]["text"]
 
-        extract_action_index = -1
-        for j, action in enumerate(actions):
-            if 'extract_structured_data' in action:
-                extract_action_index = j
-                break
-
-        if extract_action_index != -1 and extract_action_index < len(results):
-            extracted_content = results[extract_action_index].get('extracted_content')
-            if extracted_content:
-                if "Query:" in extracted_content and "Result:" in extracted_content:
-                    final_result_text = extracted_content.split("Result:", 1)[-1].strip()
-                else:
-                    final_result_text = extracted_content.strip()
-
-                if i > 0:
-                    previous_step_memory = history[i - 1].get('model_output', {}).get('memory')
-                    if previous_step_memory:
-                        process_summary_text = previous_step_memory
-                break
-
-    if not final_result_text:
-        print("Warning: Could not find any successful 'extract_structured_data' action in the log.")
-        final_memory = history[-1].get('model_output', {}).get('memory', "The task was completed.")
-        final_result_text = f"No specific data was extracted. The final status was: '{final_memory}'"
-
-    prompt = f"""{process_summary_text}\n{final_result_text}"""
-    return prompt.strip(), process_summary_text, final_result_text
+    process_summary_text =  f"{action}"
+    prompt = f"""{process_summary_text}\n{final_text_summary}"""
+    return prompt.strip(), process_summary_text, final_text_summary
 
 # if __name__ == "__main__":
 #     json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
