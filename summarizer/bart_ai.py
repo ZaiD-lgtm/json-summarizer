@@ -88,8 +88,8 @@ def generate_summary_prompt(json_path: str):
     if json_data["history"][-1]["result"][0]["extracted_content"]:
         final_text_summary = json_data["history"][-1]["result"][0]["extracted_content"]
 
-    if json_data["history"][-1]["model_output"]["action"][0]["done"]["text"]:
-        action = json_data["history"][-1]["model_output"]["action"][0]["done"]["text"]
+    if json_data["history"][-1]["model_output"]["evaluation_previous_goal"]:
+        action = json_data["history"][-1]["model_output"]["evaluation_previous_goal"]
 
     process_summary_text =  f"{action}"
     prompt = f"""{process_summary_text}\n{final_text_summary}"""

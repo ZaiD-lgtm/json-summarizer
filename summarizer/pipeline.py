@@ -52,7 +52,6 @@ def evaluate_json(json_file_path: str):
         "metrics": metrics
     }
 
-
 def update_json_with_results(json_file_path: str, summary: str, scores: dict, output_file: str = "updated_json.json"):
     with open(json_file_path, "r") as f:
         data = json.load(f)
@@ -72,13 +71,13 @@ def run_pipeline(json_file_path: str, output_file: str = "updated_json.json"):
     update_json_with_results(json_file_path, result["summary"], result["metrics"], output_file)
 
 
-if __name__ == "__main__":
-    json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
-    json_new = "/home/zaid/Downloads/voice-agent/raman-hospitals-history.json"
-    json_1 = "/home/zaid/Downloads/voice-agent/raman.json"
-    json_2 = "/home/zaid/Downloads/voice-agent/raman (1).json"
-    json_3 = "/home/zaid/Downloads/voice-agent/raman (2).json"
-    json_4 = "/home/zaid/Downloads/voice-agent/raman (3).json"
-    json_5 = "/home/zaid/Downloads/voice-agent/raman (4).json"
-    output_file = "/home/zaid/Downloads/voice-agent/workspace/updated.json"
-    run_pipeline(json_5, output_file)
+# if __name__ == "__main__":
+#     json_file_path = "/home/zaid/Downloads/voice-agent/json_summarizer/summarizer/raman.json"
+#     json_new = "/home/zaid/Downloads/voice-agent/raman-hospitals-history.json"
+#     json_1 = "/home/zaid/Downloads/voice-agent/raman.json"
+#     json_2 = "/home/zaid/Downloads/voice-agent/raman (1).json"
+#     json_3 = "/home/zaid/Downloads/voice-agent/raman (2).json"
+#     json_4 = "/home/zaid/Downloads/voice-agent/raman (3).json"
+#     json_5 = "/home/zaid/Downloads/voice-agent/raman (4).json"
+#     output_file = "/home/zaid/Downloads/voice-agent/workspace/updated.json"
+#     run_pipeline(json_3, output_file)
